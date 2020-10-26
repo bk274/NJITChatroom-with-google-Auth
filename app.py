@@ -23,7 +23,6 @@ sql_pwd = os.environ['SQL_PASSWORD']
 dbuser = os.environ['USER']
 database_uri = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -50,16 +49,14 @@ except:
 
 
 def emit_all_messages(channel):
-
     messages = [[db_user.message, str(db_user.stamp), db_user.from_name, db_user.from_avatar]
                 for db_user in db.session.execute("SELECT * FROM messages")]
+
     
     socketio.emit(channel, {
         'messages': messages,
         'users': len(users)
     })
-
-    return messages
     
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -67,8 +64,11 @@ def emit_all_messages(channel):
 @socketio.on('connect')
 def on_connect():
     print('Someone connection +++++++')
+    socketio.emit('connected', {
+        'test': 'Connected'
+    })
 
-    return emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
+    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
 
 
 @socketio.on('disconnect')
@@ -91,7 +91,7 @@ def on_user_logout(data):
     print("Got an event for new user output with data:", data)
 
     users.remove(data["id"])
-    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
+    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)    
     
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -115,7 +115,6 @@ def on_new_message(data):
         db.session.execute("INSERT INTO messages (message, stamp, from_name) VALUES ('" +
                            response + "','" + str(now) + "', 'bot');")
         db.session.commit()
-        
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
     
     
