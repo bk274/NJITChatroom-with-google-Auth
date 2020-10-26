@@ -33,7 +33,17 @@ class UnMockedTestCase(unittest.TestCase):
             },
         ]
         
-    
+        self.failure_test_params = [
+            {
+                KEY_INPUT: "!!Who are you",
+                KEY_EXPECTED: "It's me"
+            },
+            {
+                KEY_INPUT: "!!date",
+                KEY_EXPECTED: "2020/10/23"
+   
+            },
+        ]
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -49,7 +59,16 @@ class UnMockedTestCase(unittest.TestCase):
             # Alternatively (and preferably), you can do self.assertDictEqual(response, expected)
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-
+             
+    def test_parse_message_failure(self):
+        chatbot = chat()
+        
+        for test in self.failure_test_params:
+            response = chatbot.response(test[KEY_INPUT])
+            expected = test[KEY_EXPECTED]
+            
+            # TODO add assertNotEqual cases here instead
+            self.assertNotEqual(response, expected)
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
