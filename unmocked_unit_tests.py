@@ -41,7 +41,18 @@ class UnMockedTestCase(unittest.TestCase):
             {
                 KEY_INPUT: "!!date",
                 KEY_EXPECTED: "2020/10/23"
-   
+            },
+            {
+                KEY_INPUT: "!!covid",
+                KEY_EXPECTED: "Recovered in USA: 10"
+            },
+            {
+                KEY_INPUT: "!!funtranslate good morning",
+                KEY_EXPECTED: "good morning"
+            },
+            {
+                KEY_INPUT: "!!covid",
+                KEY_EXPECTED: "There are 10 recovered people in USA"
             },
         ]
 
