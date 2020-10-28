@@ -103,7 +103,13 @@ g.	go to browser http://localhost:8082
     b.	` git push heroku masterbranch`
 
 
-    
+7- Unittesting for the mock and unmocked files 
+    a. python -m unittest tests.mocked_unit_tests tests.unmocked_unit_tests
+    b. coverage run -m unittest tests.unmocked_unit_tests tests.mocked_unit_tests -v
+    c. coverage report -m
+    d. go to htmlconv
+    e. open index.html
+    f. you will be able to see app coverage 
 
 Issues i Experienced during this project
 1. Experienced an issue with my database where some of the files were not getting installed and i had to do the project in a different aws environment
@@ -115,6 +121,6 @@ Issues i Experienced during this project
 7. With milestone i realized that when i do force push it deleted all of my previous commits and it will make it seem like i did not commit anything. Fix for that issue is never use force push
 8. Experience issues with importing userame and password from env file because i had DATABASE_URL in the incorrect form. EXAMPLE  (DATABASE_URL='databasename://username:password@localhost/databasename')
 
-python -m unittest tests.mocked_unit_tests tests.unmocked_unit_tests
-coverage run -m unittest tests.unmocked_unit_tests tests.mocked_unit_tests -v
-coverage report -m
+
+
+
