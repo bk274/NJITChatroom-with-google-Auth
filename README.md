@@ -104,11 +104,17 @@ g.	go to browser http://localhost:8082
 
 
 7- Unittesting for the mock and unmocked files 
+
         a. python -m unittest tests.mocked_unit_tests tests.unmocked_unit_tests
+        
         b. coverage run -m unittest tests.unmocked_unit_tests tests.mocked_unit_tests -v
+       
         c. coverage report -m
+        
         d. go to htmlconv
+       
         e. open index.html
+        
         f. you will be able to see app coverage 
 
 Issues i Experienced during this project
