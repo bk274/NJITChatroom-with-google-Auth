@@ -1,54 +1,85 @@
 import React, { Component } from 'react';
-import { GoogleLogin, GoogleLogout } from 'react-google-login'
-import { Header, Grid, Label, Ref } from 'semantic-ui-react'
+import { GoogleLogin, GoogleLogout } from 'react-google-login';
+import { Header, Grid, Label } from 'semantic-ui-react';
+import PropTypes from 'prop-types';
 
-export class ChatHeader extends Component {
+export default class ChatHeader extends Component {
     constructor(props) {
         super(props);
 
-        this.clientId = "564574908714-sh0i2elo3a2a1dfh5lpec354du76hk28.apps.googleusercontent.com";
-        this.ref = React.createRef();
+        this.clientId = '1075433900902-3m8ufv68sq71h30ebnc4d04aikeoo3ut.apps.googleusercontent.com';
     }
 
     render() {
+        const {
+            login, onLoginSuccess, onLoginFailure,
+            onLogoutSuccess, avatar, name, email,
+        } = this.props;
+
         return (
-            <Grid verticalAlign='middle'>
+            <Grid verticalAlign="middle">
                 <Grid.Row>
-                    <Grid.Column floated='left' width={8}>
-                        <Header as='h2'>Chat Room</Header>
+                    <Grid.Column floated="left" width={8}>
+                        <Header as="h2">Chat Room</Header>
                     </Grid.Column>
-                    <Grid.Column width={5} textAlign='right'>
+                    <Grid.Column width={5} textAlign="right">
                         {
-                            !this.props.login && <GoogleLogin
-                                clientId={this.clientId}
-                                buttonText="Sign in"
-                                onSuccess={this.props.onLoginSuccess}
-                                onFailure={this.props.onLoginFailure}
-                                cookiePolicy={'single_host_origin'}
-                                isSignedIn={true}
-                            />
+                            !login && (
+                                <GoogleLogin
+                                    clientId={this.clientId}
+                                    buttonText="Sign in"
+                                    onSuccess={onLoginSuccess}
+                                    onFailure={onLoginFailure}
+                                    cookiePolicy="single_host_origin"
+                                    isSignedIn
+                                />
+                            )
                         }
                         {
-                            this.props.login && <GoogleLogout
-                                clientId={this.clientId}
-                                buttonText="Logout"
-                                onLogoutSuccess={this.props.onLogoutSuccess}
-                            />
+                            login && (
+                                <GoogleLogout
+                                    clientId={this.clientId}
+                                    buttonText="Logout"
+                                    onLogoutSuccess={onLogoutSuccess}
+                                />
+                            )
                         }
                     </Grid.Column>
                 </Grid.Row>
-                {this.props.login &&
-                    <Grid.Row>
-                        <Grid.Column floated='left' width={16}>
-                            <Label as='a' color='blue' image>
-                                <img src={this.props.avatar} />
-                                {this.props.name}
-                                <Label.Detail>{this.props.email}</Label.Detail>
-                            </Label>
-                        </Grid.Column>
-                    </Grid.Row>
+                {
+                    login && (
+                        <Grid.Row>
+                            <Grid.Column floated="left" width={16}>
+                                <Label as="a" color="blue" image>
+                                    <img src={avatar} alt="avatar" />
+                                    {name}
+                                    <Label.Detail>{email}</Label.Detail>
+                                </Label>
+                            </Grid.Column>
+                        </Grid.Row>
+                    )
                 }
             </Grid>
         );
     }
 }
+
+ChatHeader.propTypes = {
+    login: PropTypes.bool,
+    avatar: PropTypes.string,
+    name: PropTypes.string,
+    email: PropTypes.string,
+    onLoginSuccess: PropTypes.func,
+    onLoginFailure: PropTypes.func,
+    onLogoutSuccess: PropTypes.func,
+};
+
+ChatHeader.defaultProps = {
+    login: false,
+    avatar: '',
+    name: '',
+    email: '',
+    onLoginSuccess: () => { },
+    onLoginFailure: () => { },
+    onLogoutSuccess: () => { },
+};

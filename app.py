@@ -1,18 +1,26 @@
+"""
+Main Module
+"""
 from os.path import join, dirname
-from dotenv import load_dotenv
 from datetime import datetime
 import os
+from dotenv import load_dotenv
 import flask
 import flask_sqlalchemy
 import flask_socketio
-import responses
-import time
+from responses import response
 
 MESSAGES_RECEIVED_CHANNEL = 'messages received'
+MESSAGES = 'messages'
+USERS = 'users'
+KEY_ID = "id"
+
+KEY_BOT_MESSAGE = "bot_message"
+KEY_HUMAN_MESSAGE = "human_message"
 
 app = flask.Flask(__name__)
 
-#---------------------------------------------------------------------------------------------------------------------------------------------
+#
 
 socketio = flask_socketio.SocketIO(app)
 socketio.init_app(app, cors_allowed_origins="*")
@@ -24,17 +32,17 @@ dbuser = os.environ['USER']
 database_uri = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
-#---------------------------------------------------------------------------------------------------------------------------------------------
+
+#
 
 db = flask_sqlalchemy.SQLAlchemy(app)
 db.init_app(app)
 db.app = app
-Response = responses.chat()
 
 users = set()
 
 try:
+    # pylint: disable=maybe-no-member
     db.session.execute(
         """CREATE TABLE messages (
             id serial PRIMARY KEY,
@@ -43,97 +51,102 @@ try:
             from_name VARCHAR ( 255 ),
             from_avatar VARCHAR ( 255 ));""")
     db.session.commit()
-except:
-    print("messages db created")
-    
-#---------------------------------------------------------------------------------------------------------------------------------------------
+except:# pylint: disable=bare-except
+    # pylint: disable=maybe-no-member
+    db.session.rollback()
 
+#
 
 def emit_all_messages(channel):
-
+    """Method for send message to client"""
+    # pylint: disable=maybe-no-member
     messages = [[db_user.message, str(db_user.stamp), db_user.from_name, db_user.from_avatar]
                 for db_user in db.session.execute("SELECT * FROM messages")]
-    
-    socketio.emit(channel, {
-        'messages': messages,
-        'users': len(users)
-    })
 
-    return messages
-    
-#---------------------------------------------------------------------------------------------------------------------------------------------
+    data = {
+        MESSAGES: messages,
+        USERS: len(users)
+    }
 
+    socketio.emit(channel, data)
+
+    return data
+
+#
 
 @socketio.on('connect')
 def on_connect():
-    print('Someone connection +++++++')
+    """Method for send message to client at first"""
+    return emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
 
+#
+
+@socketio.on('new user input')
+def on_user_signin(data = None):
+    """Method for notice client that new user enter the room"""
+    users.add(data["id"])
     return emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
 
 
-@socketio.on('disconnect')
-def on_disconnect():
-    print('Someone disconnected +++++++')
-    
-#---------------------------------------------------------------------------------------------------------------------------------------------
-
-
-@socketio.on('new user input')
-def on_user_signin(data):
-    print("Got an event for new user input with data:", data)
-
-    users.add(data["id"])
-    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
-
-
 @socketio.on('new user output')
-def on_user_logout(data):
-    print("Got an event for new user output with data:", data)
-
+def on_user_logout(data = None):
+    """Method for notice client that new user out the room"""
     users.remove(data["id"])
-    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
-    
-#---------------------------------------------------------------------------------------------------------------------------------------------
+    return emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
+
+#
 
 @socketio.on('new message input')
 def on_new_message(data):
-    print("Got an event for new message input with data:", data)
-
+    """Method for process chat text"""
     now = datetime.now()
     new_message = data["message"].replace('\'', '\'\'')
     new_name = data["name"].replace('\'', '\'\'')
     new_avatar = data["avatar"].replace('\'', '\'\'')
 
-    db.session.execute("INSERT INTO messages (message, stamp, from_name, from_avatar) VALUES ('" +
-                       new_message + "','" + str(now) + "', '" + new_name + "', '" + new_avatar + "');")
+    # pylint: disable=maybe-no-member
+    [new_id] = db.session.execute("""INSERT INTO messages (message, stamp, from_name, from_avatar)
+                        VALUES ('""" +
+                        new_message + "','" + str(now) + "', '" + new_name + "', '" + new_avatar +
+                        """')
+                        RETURNING id""").fetchone()
+
     db.session.commit()
     message_value = str(new_message)
 
-    if(message_value[:2] == '!!'):
+    if message_value[:2] == '!!':
         now = datetime.now()
-        response = Response.response(data["message"]).replace('\'', '\'\'')
-        db.session.execute("INSERT INTO messages (message, stamp, from_name) VALUES ('" +
-                           response + "','" + str(now) + "', 'bot');")
+        bot_message = response(data["message"]).replace('\'', '\'\'')
+        [new_bot_id] = db.session.execute("""INSERT INTO messages (message, stamp, from_name)
+                        VALUES ('""" +
+                        bot_message + "','" + str(now) + """', 'bot'
+                        )
+                        RETURNING id""").fetchone()
         db.session.commit()
-        
-    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
-    
-    
-    
-#---------------------------------------------------------------------------------------------------------------------------------------------
 
+        emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
+
+        return {
+            KEY_HUMAN_MESSAGE: [new_id, new_message, new_name, new_avatar],
+            KEY_BOT_MESSAGE: [new_bot_id, bot_message]
+        }
+
+    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
+
+    return [new_id, new_message, new_name, new_avatar]
+
+#
 
 @app.route('/')
 def index():
+    """Method for routing index page"""
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
     return flask.render_template("index.html")
-
-
 
 if __name__ == '__main__':
     socketio.run(
         app,
         host=os.getenv('IP', '0.0.0.0'),
-        port=int(os.getenv('PORT', 8082)),
+        port=8082,
         debug=True
     )

@@ -1,58 +1,72 @@
 import React, { Component } from 'react';
-import { Socket } from './Socket';
-import { Form, Message } from 'semantic-ui-react'
+import { Form, Message } from 'semantic-ui-react';
+import PropTypes from 'prop-types';
+import Socket from './Socket';
 
-export class SendMessage extends Component {
+export default class SendMessage extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            message: ""
+            message: '',
         };
-
-        console.log(this.props.login)
     }
 
-    handleSubmit = event => {
-        if (this.props.login) {
+    handleSubmit = (event) => {
+        const { login, name, avatar } = this.props;
+        const { message } = this.state;
+        if (login) {
             Socket.emit('new message input', {
-                'message': this.state.message,
-                'name': this.props.name,
-                'avatar': this.props.avatar
+                message,
+                name,
+                avatar,
             });
 
             this.setState({
-                message: ""
+                message: '',
             });
-            console.log('Sent the message ' + this.state.message + ' to server');
         }
 
         event.preventDefault();
     }
 
-    handleChange = event => {
+    handleChange = (event) => {
         this.setState({
-            message: event.target.value
+            message: event.target.value,
         });
     }
 
     render() {
+        const { message } = this.state;
+        const { login } = this.props;
         return (
             <Form error onSubmit={this.handleSubmit}>
                 <Form.Group>
-                    <Form.Input placeholder='Enter your message...' width={13} onChange={this.handleChange} value={this.state.message} />
+                    <Form.Input placeholder="Enter your message..." width={13} onChange={this.handleChange} value={message} />
                     <Form.Button width={3}>Send</Form.Button>
                 </Form.Group>
-
-
                 {
-                    !this.props.login && <Message
-                        error
-                        header='Action Forbidden'
-                        content='You can only sign up for an account once with a given e-mail address.'
-                    />
+                    !login && (
+                        <Message
+                            error
+                            header="Action Forbidden"
+                            content="You can only sign up for an account once with a given e-mail address."
+                        />
+                    )
                 }
             </Form>
         );
     }
 }
+
+SendMessage.propTypes = {
+    login: PropTypes.bool,
+    avatar: PropTypes.string,
+    name: PropTypes.string,
+};
+
+SendMessage.defaultProps = {
+    login: false,
+    avatar: '',
+    name: '',
+};

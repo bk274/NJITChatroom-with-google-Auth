@@ -1,7 +1,7 @@
 
 
                                                                            
-1.	            Install packages
+1.	Install packages
 a.	`pip install python-dotenv`
 b.	`pip install flask-sqlalchemy`
 c.	`pip install requests`
@@ -16,10 +16,10 @@ k.	`npm install socket.io-client –save`
 l.	
  If you see any error messages, make sure you use `sudo pip` or `sudo npm`. If it says "pip cannot be found", run `which pip` and use `sudo [path to pip from which pip] install` like in step 2 
 
-2.	            Setting up  PSQL
-        a.	Update yum: 
+2.      Setting up  PSQL
+a.	Update yum: 
 i.	    `sudo yum update`
-enter yes to all prompts    
+        enter yes to all prompts    
 b.	Upgrade pip:
 i.	`sudo /usr/local/bin/pip install --upgrade pip`
 c.	Get psycopg2: 
@@ -115,3 +115,6 @@ Issues i Experienced during this project
 7. With milestone i realized that when i do force push it deleted all of my previous commits and it will make it seem like i did not commit anything. Fix for that issue is never use force push
 8. Experience issues with importing userame and password from env file because i had DATABASE_URL in the incorrect form. EXAMPLE  (DATABASE_URL='databasename://username:password@localhost/databasename')
 
+python -m unittest tests.mocked_unit_tests tests.unmocked_unit_tests
+coverage run -m unittest tests.unmocked_unit_tests tests.mocked_unit_tests -v
+coverage report -m
