@@ -44,12 +44,6 @@ Create a file named `.env` and set it up as the following:
 ```
 
 DATABASE_URL=<URL to your psql database>
-TWITTER_CONSUMER_KEY = "<Twitter consumer key>"
-TWITTER_CONSUMER_SECRET = "<Twitter consumer secret>"
-TWITTER_ACCESS_TOKEN = "<Twitter access token>"
-TWITTER_ACCESS_TOKEN_SECRET = "<Twitter access token secret>"
-GOOGLE_MAP_API_KEY=<Google map API Key Here>
-POLITICS_API_KEY=<OpenStates API key Here>
 
 ```
 
